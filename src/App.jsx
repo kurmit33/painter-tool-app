@@ -1,73 +1,33 @@
-import { Navigate, Route, Routes, Link } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
-import { useAuth } from './context/AuthContext';
+import MyColorings from './pages/MyColorings';
+import ColoringEditor from './pages/ColoringEditor';
+import Gallery from './pages/Gallery';
+import ProtectedRoute from './components/ProtectedRoute';
+import NewColoring from './pages/NewColoring';
 
 function Home() {
-  const { user, isAuthenticated, logout } = useAuth();
-
   return (
-    <main>
-      <h1>Painter Tool</h1>
+    <main className="home-page">
+      <div className="home-card">
+        <h1>Moje kolorowanki</h1>
 
-      {isAuthenticated ? (
-        <>
-          <p>
-            Zalogowany jako: <strong>{user.email}</strong>
-          </p>
+        <p>
+          Koloruj, zapisuj i dziel się swoimi pracami.
+        </p>
 
-          <button onClick={logout}>
-            Wyloguj się
-          </button>
-        </>
-      ) : (
-        <>
-          <p>Nie jesteś zalogowany.</p>
+        <div className="home-actions">
+          <a href="/kolorowanki">
+            Moje kolorowanki
+          </a>
 
-          <div>
-            <Link to="/login">Zaloguj się</Link>
-          </div>
-
-          <div>
-            <Link to="/register">Zarejestruj się</Link>
-          </div>
-        </>
-      )}
-    </main>
-  );
-}
-
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <p>Ładowanie...</p>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-}
-
-function LoggedInTest() {
-  const { user } = useAuth();
-
-  return (
-    <main>
-      <h1>Panel użytkownika</h1>
-
-      <p>
-        Witaj, <strong>{user.email}</strong>
-      </p>
-
-      <p>
-        Ta strona jest dostępna tylko dla zalogowanych użytkowników.
-      </p>
-
-      <Link to="/">Wróć na stronę główną</Link>
+          <a href="/galeria">
+            Galeria
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
@@ -77,22 +37,66 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
 
-      <Route path="/login" element={<Login />} />
-
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
       <Route
-        path="/panel"
+        path="/register"
+        element={<Register />}
+      />
+
+      <Route
+        path="/kolorowanki"
         element={
           <ProtectedRoute>
-            <LoggedInTest />
+            <MyColorings />
           </ProtectedRoute>
         }
       />
 
       <Route
+        path="/kolorowanka/nowa"
+        element={
+          <ProtectedRoute>
+            <NewColoring />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/kolorowanka/:id"
+        element={
+          <ProtectedRoute>
+            <ColoringEditor />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/galeria"
+        element={<Gallery />}
+      />
+
+      <Route
+        path="/panel"
+        element={
+          <Navigate
+            to="/kolorowanki"
+            replace
+          />
+        }
+      />
+
+      <Route
         path="*"
-        element={<Navigate to="/" replace />}
+        element={
+          <Navigate
+            to="/"
+            replace
+          />
+        }
       />
     </Routes>
   );
