@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import MyColorings from './pages/MyColorings';
 import ColoringEditor from './pages/ColoringEditor';
 import Gallery from './pages/Gallery';
+import GalleryArtwork from './pages/GalleryArtwork';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewColoring from './pages/NewColoring';
 
@@ -78,6 +79,11 @@ export default function App() {
         path="/galeria"
         element={<Gallery />}
       />
+
+      <Route
+  path="/galeria/:id"
+  element={<GalleryArtwork />}
+/>
 
       <Route
         path="/panel"

@@ -4,11 +4,17 @@ export default function Toolbar({
   eraser,
   onEraserToggle,
   onClear,
+  onSave,
+  saving,
+  isPublic,
+  onPublishToggle,
 }) {
   return (
     <div className="toolbar">
       <div className="toolbar-group">
-        <label htmlFor="color-picker">Kolor</label>
+        <label htmlFor="color-picker">
+          Kolor
+        </label>
 
         <input
           id="color-picker"
@@ -16,6 +22,7 @@ export default function Toolbar({
           value={color}
           onChange={(event) => {
             onColorChange(event.target.value);
+
             if (eraser) {
               onEraserToggle(false);
             }
@@ -26,8 +33,14 @@ export default function Toolbar({
 
       <button
         type="button"
-        className={eraser ? 'toolbar-button active' : 'toolbar-button'}
-        onClick={() => onEraserToggle(!eraser)}
+        className={
+          eraser
+            ? 'toolbar-button active'
+            : 'toolbar-button'
+        }
+        onClick={() =>
+          onEraserToggle(!eraser)
+        }
       >
         🧽 Gumka
       </button>
@@ -38,6 +51,31 @@ export default function Toolbar({
         onClick={onClear}
       >
         🗑 Wyczyść
+      </button>
+
+      <button
+        type="button"
+        className="toolbar-button save-button"
+        onClick={onSave}
+        disabled={saving}
+      >
+        {saving
+          ? 'Zapisywanie...'
+          : '💾 Zapisz'}
+      </button>
+
+      <button
+        type="button"
+        className={
+          isPublic
+            ? 'toolbar-button publish-button published'
+            : 'toolbar-button publish-button'
+        }
+        onClick={onPublishToggle}
+      >
+        {isPublic
+          ? '🌐 Wycofaj publikację'
+          : '🌐 Opublikuj'}
       </button>
     </div>
   );
