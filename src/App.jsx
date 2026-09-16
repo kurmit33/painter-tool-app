@@ -11,25 +11,7 @@ import NewColoring from './pages/NewColoring';
 
 function Home() {
   return (
-    <main className="home-page">
-      <div className="home-card">
-        <h1>Moje kolorowanki</h1>
-
-        <p>
-          Koloruj, zapisuj i dziel się swoimi pracami.
-        </p>
-
-        <div className="home-actions">
-          <a href="/kolorowanki">
-            Moje kolorowanki
-          </a>
-
-          <a href="/galeria">
-            Galeria
-          </a>
-        </div>
-      </div>
-    </main>
+    <Navigate to="/profil" replace />
   );
 }
 
@@ -49,11 +31,21 @@ export default function App() {
       />
 
       <Route
-        path="/kolorowanki"
+        path="/profil"
         element={
           <ProtectedRoute>
             <MyColorings />
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/kolorowanki"
+        element={
+          <Navigate
+            to="/profil"
+            replace
+          />
         }
       />
 
@@ -81,15 +73,15 @@ export default function App() {
       />
 
       <Route
-  path="/galeria/:id"
-  element={<GalleryArtwork />}
-/>
+        path="/galeria/:id"
+        element={<GalleryArtwork />}
+      />
 
       <Route
         path="/panel"
         element={
           <Navigate
-            to="/kolorowanki"
+            to="/profil"
             replace
           />
         }
@@ -99,7 +91,7 @@ export default function App() {
         path="*"
         element={
           <Navigate
-            to="/"
+            to="/profil"
             replace
           />
         }

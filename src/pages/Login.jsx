@@ -27,7 +27,7 @@ export default function Login() {
 
       await login(email, password);
 
-      navigate('/');
+      navigate('/profil');
     } catch (err) {
       setError(err.message);
     } finally {

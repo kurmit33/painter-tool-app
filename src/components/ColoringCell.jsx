@@ -1,4 +1,4 @@
-export default function ColoringCell({ color, onClick }) {
+export default function ColoringCell({ number, color, onClick }) {
   return (
     <button
       type="button"
@@ -7,7 +7,11 @@ export default function ColoringCell({ color, onClick }) {
         backgroundColor: color || '#ffffff',
       }}
       onClick={onClick}
-      aria-label="Pole kolorowanki"
-    />
+      aria-label={`Pole ${number}`}
+    >
+      <span className="coloring-cell-number">
+        {number}
+      </span>
+    </button>
   );
 }

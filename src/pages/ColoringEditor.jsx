@@ -3,23 +3,26 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import ColoringGrid from '../components/ColoringGrid';
 import Toolbar from '../components/Toolbar';
+import Sidebar from '../components/Sidebar';
+
 import {
     getArtwork,
     getColoringPage,
-    getMyArtworks,
     setArtworkPublic,
     updateArtwork,
+    getMyArtworks,
 } from '../api/api';
 
 const DEFAULT_COLOR = '#ff0000';
+
 function buildPalette(cells) {
-  return [
-    ...new Set(
-      cells
-        .map((cell) => cell.color)
-        .filter(Boolean)
-    ),
-  ];
+    return [
+        ...new Set(
+            cells
+                .map((cell) => cell.color)
+                .filter(Boolean)
+        ),
+    ];
 }
 
 export default function ColoringEditor() {
@@ -37,6 +40,7 @@ export default function ColoringEditor() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [savedMessage, setSavedMessage] = useState('');
+    const [artworks, setArtworks] = useState([]);
 
     useEffect(() => {
         async function loadArtwork() {
@@ -44,18 +48,61 @@ export default function ColoringEditor() {
                 setLoading(true);
                 setError('');
 
-                const loadedArtwork = await getArtwork(id);
+                const artworkResponse = await getArtwork(id);
+
+                const loadedArtwork =
+                    artworkResponse?.artwork ||
+                    artworkResponse;
 
                 setArtwork(loadedArtwork);
-                setCells(loadedArtwork.cells || []);
+                setCells(
+                    Array.isArray(loadedArtwork.cells)
+                        ? loadedArtwork.cells
+                        : []
+                );
 
-                if (loadedArtwork.pageId) {
-                    const page = await getColoringPage(loadedArtwork.pageId);
-
-                    setTotalCells(page.totalCells || 0);
+                if (!loadedArtwork.pageId) {
+                    throw new Error(
+                        'Kolorowanka nie ma przypisanej strony (brak pageId).'
+                    );
                 }
+
+                const pageId =
+                    typeof loadedArtwork.pageId === 'object'
+                        ? loadedArtwork.pageId._id
+                        : loadedArtwork.pageId;
+
+                let page;
+
+                if (
+                    typeof loadedArtwork.pageId === 'object' &&
+                    loadedArtwork.pageId.totalCells
+                ) {
+                    page = loadedArtwork.pageId;
+                } else {
+                    const pageResponse = await getColoringPage(pageId);
+
+                    page =
+                        pageResponse?.page ||
+                        pageResponse;
+                }
+
+                const cellsCount = Number(
+                    page?.totalCells
+                );
+
+                if (!Number.isFinite(cellsCount) || cellsCount <= 0) {
+                    throw new Error(
+                        `Nieprawidłowe totalCells: ${page?.totalCells}`
+                    );
+                }
+
+                setTotalCells(cellsCount);
             } catch (err) {
-                setError(err.message || 'Nie udało się załadować kolorowanki.');
+                setError(
+                    err.message ||
+                    'Nie udało się załadować kolorowanki.'
+                );
             } finally {
                 setLoading(false);
             }
@@ -64,14 +111,36 @@ export default function ColoringEditor() {
         if (id) {
             loadArtwork();
         }
+        async function loadArtworks() {
+            try {
+                const data = await getMyArtworks();
+
+                setArtworks(
+                    Array.isArray(data)
+                        ? data
+                        : data?.artworks || []
+                );
+            } catch {
+                setArtworks([]);
+            }
+        }
+
+        loadArtworks();
     }, [id]);
 
     const paintedCount = cells.length;
 
     const progress = useMemo(() => {
-        if (!totalCells) return 0;
+        if (!totalCells) {
+            return 0;
+        }
 
-        return Math.round((paintedCount / totalCells) * 100);
+        return Math.min(
+            100,
+            Math.round(
+                (paintedCount / totalCells) * 100
+            )
+        );
     }, [paintedCount, totalCells]);
 
     function handleCellClick(index) {
@@ -82,28 +151,27 @@ export default function ColoringEditor() {
                 (cell) => cell.index === index
             );
 
-            // Gumka
             if (eraser) {
                 return currentCells.filter(
                     (cell) => cell.index !== index
                 );
             }
 
-            // Pole już ma wybrany kolor — nic nie zmieniamy.
             if (existingCell?.color === color) {
                 return currentCells;
             }
 
-            // Pole istnieje — zmieniamy jego kolor.
             if (existingCell) {
                 return currentCells.map((cell) =>
                     cell.index === index
-                        ? { ...cell, color }
+                        ? {
+                            ...cell,
+                            color,
+                        }
                         : cell
                 );
             }
 
-            // Nowe pokolorowane pole.
             return [
                 ...currentCells,
                 {
@@ -114,20 +182,25 @@ export default function ColoringEditor() {
         });
     }
 
+    function handleSelectArtwork(selectedArtwork) {
+        navigate(`/kolorowanka/${selectedArtwork._id}`);
+    }
     function handleClear() {
         setCells([]);
         setSavedMessage('');
     }
 
     async function handleSave() {
-        if (!artwork) return;
+        if (!artwork) {
+            return;
+        }
 
         try {
             setSaving(true);
             setError('');
             setSavedMessage('');
 
-            const updatedArtwork = await updateArtwork(
+            const response = await updateArtwork(
                 artwork._id,
                 {
                     title: artwork.title,
@@ -137,24 +210,33 @@ export default function ColoringEditor() {
                 }
             );
 
+            const updatedArtwork =
+                response?.artwork ||
+                response;
 
             setArtwork(updatedArtwork);
-            setCells(updatedArtwork.cells || []);
 
-            setSavedMessage('Zapisano kolorowankę.');
+            setCells(
+                Array.isArray(updatedArtwork.cells)
+                    ? updatedArtwork.cells
+                    : []
+            );
+
+            setSavedMessage(
+                'Zapisano kolorowankę.'
+            );
         } catch (err) {
-            setError(err.message || 'Nie udało się zapisać kolorowanki.');
+            setError(
+                err.message ||
+                'Nie udało się zapisać kolorowanki.'
+            );
         } finally {
             setSaving(false);
         }
     }
 
     async function handlePublishToggle() {
-        if (!artwork) {
-            return;
-        }
-
-        if (saving) {
+        if (!artwork || saving) {
             return;
         }
 
@@ -162,16 +244,18 @@ export default function ColoringEditor() {
             setError('');
             setSavedMessage('');
 
-            const newPublicState = !artwork.isPublic;
+            const newPublicState =
+                !artwork.isPublic;
 
-            const result = await setArtworkPublic(
-                artwork._id,
-                newPublicState
-            );
+            const response =
+                await setArtworkPublic(
+                    artwork._id,
+                    newPublicState
+                );
 
             const updatedArtwork =
-                result?.artwork ||
-                result;
+                response?.artwork ||
+                response;
 
             setArtwork(updatedArtwork);
 
@@ -206,7 +290,9 @@ export default function ColoringEditor() {
 
                     <button
                         type="button"
-                        onClick={() => navigate('/kolorowanki')}
+                        onClick={() =>
+                            navigate('/kolorowanki')
+                        }
                     >
                         Wróć do moich kolorowanek
                     </button>
@@ -220,75 +306,98 @@ export default function ColoringEditor() {
     }
 
     return (
-        <main className="editor-page">
-            <div className="editor-container">
-                <header className="editor-header">
-                    <button
-                        type="button"
-                        className="back-button"
-                        onClick={() => navigate('/kolorowanki')}
-                    >
-                        ← Moje kolorowanki
-                    </button>
+        <div className="service-layout">
+            <Sidebar
+                artworks={artworks}
+                activeArtworkId={artwork._id}
+                onSelectArtwork={handleSelectArtwork}
+            />
+            <main className="editor-page">
+                <div className="editor-container">
 
-                    <div className="editor-title-area">
-                        <input
-                            type="text"
-                            className="editor-title"
-                            value={artwork.title || ''}
-                            onChange={(event) =>
-                                setArtwork((current) => ({
-                                    ...current,
-                                    title: event.target.value,
-                                }))
+                    <header className="editor-header">
+                        <button
+                            type="button"
+                            className="back-button"
+                            onClick={() =>
+                                navigate('/kolorowanki')
                             }
-                            placeholder="Nazwa kolorowanki"
-                        />
+                        >
+                            ← Moje kolorowanki
+                        </button>
 
-                        <div className="editor-progress">
-                            {paintedCount} / {totalCells} · {progress}%
+                        <div className="editor-title-area">
+                            <input
+                                type="text"
+                                className="editor-title"
+                                value={
+                                    artwork.title || ''
+                                }
+                                onChange={(event) =>
+                                    setArtwork(
+                                        (current) => ({
+                                            ...current,
+                                            title:
+                                                event.target.value,
+                                        })
+                                    )
+                                }
+                                placeholder="Nazwa kolorowanki"
+                            />
+
+                            <div className="editor-progress">
+                                {paintedCount} / {totalCells}
+                                {' · '}
+                                {progress}%
+                            </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
 
-                <Toolbar
-                    color={color}
-                    onColorChange={setColor}
-                    eraser={eraser}
-                    onEraserToggle={setEraser}
-                    onClear={handleClear}
-                    onSave={handleSave}
-                    saving={saving}
-                    isPublic={artwork.isPublic}
-                    onPublishToggle={handlePublishToggle}
-                />
+                    <Toolbar
+                        color={color}
+                        onColorChange={setColor}
+                        eraser={eraser}
+                        onEraserToggle={setEraser}
+                        onClear={handleClear}
+                        onSave={handleSave}
+                        saving={saving}
+                        isPublic={artwork.isPublic}
+                        onPublishToggle={
+                            handlePublishToggle
+                        }
+                    />
 
-                {error && (
-                    <div className="editor-message error">
-                        {error}
-                    </div>
-                )}
-
-                {savedMessage && (
-                    <div className="editor-message success">
-                        {savedMessage}
-                    </div>
-                )}
-
-                <section className="coloring-board">
-                    {totalCells > 0 ? (
-                        <ColoringGrid
-                            totalCells={totalCells}
-                            cells={cells}
-                            onCellClick={handleCellClick}
-                        />
-                    ) : (
-                        <div className="editor-empty">
-                            Ta kolorowanka nie ma jeszcze zdefiniowanej planszy.
+                    {error && (
+                        <div className="editor-message error">
+                            {error}
                         </div>
                     )}
-                </section>
+
+                    {savedMessage && (
+                        <div className="editor-message success">
+                            {savedMessage}
+                        </div>
+                    )}
+
+                    <section className="coloring-board">
+                        {totalCells > 0 ? (
+                            <ColoringGrid
+                                totalCells={totalCells}
+                                cells={cells}
+                                onCellClick={
+                                    handleCellClick
+                                }
+                            />
+                        ) : (
+                            <div className="editor-empty">
+                                Nie udało się ustalić
+                                liczby pól planszy.
+                            </div>
+                        )}
+                    </section>
+
+                </div>
+            </main>
             </div>
-        </main>
-    );
+            );
 }
