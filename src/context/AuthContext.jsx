@@ -27,17 +27,9 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  async function register(email, password) {
-    const data = await registerRequest(email, password);
-
-    setToken(data.token);
-    setUser(data.user);
-
-    setTokenState(data.token);
-    setUserState(data.user);
-
-    return data;
-  }
+    async function register(email, password) {
+    return registerRequest(email, password);
+    }
 
   async function login(email, password) {
     const data = await loginRequest(email, password);
