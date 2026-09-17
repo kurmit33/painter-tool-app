@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import { getMyArtworks } from '../api/api';
 
 import {
   getColoringSets,

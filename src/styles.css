@@ -1724,3 +1724,45 @@ a {
         min-height: 48px;
     }
 }
+
+.toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+
+.editor-bottom-tools {
+    margin-top: 14px;
+}
+
+.editor-bottom-tools .toolbar {
+    width: 100%;
+}
+
+.editor-bottom-tools .toolbar-actions {
+    justify-content: flex-end;
+}
+
+.delete-editor-button {
+    border-color: #ead0cc;
+    color: var(--danger);
+}
+
+.delete-editor-button:hover {
+    background: #f8e8e5;
+}
+
+@media (max-width: 700px) {
+    .toolbar-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .toolbar-actions .toolbar-button {
+        width: 100%;
+    }
+}
