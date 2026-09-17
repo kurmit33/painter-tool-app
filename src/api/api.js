@@ -12,8 +12,8 @@ async function request(endpoint, options = {}) {
 
       ...(token
         ? {
-            Authorization: `Bearer ${token}`,
-          }
+          Authorization: `Bearer ${token}`,
+        }
         : {}),
 
       ...(options.headers || {}),
@@ -177,6 +177,68 @@ export async function deleteArtwork(id) {
   return request(`/artworks/${id}`, {
     method: 'DELETE',
   });
+}
+
+export async function getArtworkInteractions(
+  artworkId
+) {
+  return request(
+    `/artwork-interactions/${artworkId}`
+  );
+}
+
+
+export async function deleteArtworkRating(
+  artworkId
+) {
+  return request(
+    `/artwork-interactions/${artworkId}/rating`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+
+export async function rateArtwork(
+  artworkId,
+  rating
+) {
+  return request(
+    `/artwork-interactions/${artworkId}/rating`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        rating,
+      }),
+    }
+  );
+}
+
+export async function addArtworkComment(
+  artworkId,
+  text
+) {
+  return request(
+    `/artwork-interactions/${artworkId}/comments`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        text,
+      }),
+    }
+  );
+}
+
+export async function deleteArtworkComment(
+  commentId
+) {
+  return request(
+    `/artwork-interactions/comments/${commentId}`,
+    {
+      method: 'DELETE',
+    }
+  );
 }
 
 export { API_URL };

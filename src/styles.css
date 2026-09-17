@@ -1689,3 +1689,38 @@ a {
         min-height: 42px;
     }
 }
+
+.editor-bottom-tools {
+    margin-top: 14px;
+    margin-left: 5px;
+}
+
+.editor-bottom-tools .toolbar {
+    justify-content: flex-end;
+}
+
+.delete-editor-button {
+    border-color: #ead0cc;
+    color: var(--danger);
+}
+
+.delete-editor-button:hover {
+    background: #f8e8e5;
+}
+
+@media (max-width: 700px) {
+    .editor-bottom-tools .toolbar {
+        width: 100%;
+    }
+
+    .editor-bottom-tools .toolbar-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .editor-bottom-tools .toolbar-button {
+        width: 100%;
+        min-height: 48px;
+    }
+}

@@ -11,6 +11,7 @@ import {
     setArtworkPublic,
     updateArtwork,
     getMyArtworks,
+    deleteArtwork,
 } from '../api/api';
 
 const DEFAULT_COLOR = '#ff0000';
@@ -41,6 +42,7 @@ export default function ColoringEditor() {
     const [error, setError] = useState('');
     const [savedMessage, setSavedMessage] = useState('');
     const [artworks, setArtworks] = useState([]);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         async function loadArtwork() {
@@ -234,6 +236,35 @@ export default function ColoringEditor() {
             setSaving(false);
         }
     }
+    async function handleDelete() {
+        if (!artwork || deleting) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Czy na pewno chcesz usunąć "${artwork.title || 'Bez nazwy'}"?\n\nTej operacji nie można cofnąć.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setDeleting(true);
+            setError('');
+            setSavedMessage('');
+
+            await deleteArtwork(artwork._id);
+
+            navigate('/profil');
+        } catch (err) {
+            setError(
+                err.message ||
+                'Nie udało się usunąć kolorowanki.'
+            );
+            setDeleting(false);
+        }
+    }
 
     async function handlePublishToggle() {
         if (!artwork || saving) {
@@ -358,13 +389,7 @@ export default function ColoringEditor() {
                         onColorChange={setColor}
                         eraser={eraser}
                         onEraserToggle={setEraser}
-                        onClear={handleClear}
-                        onSave={handleSave}
-                        saving={saving}
-                        isPublic={artwork.isPublic}
-                        onPublishToggle={
-                            handlePublishToggle
-                        }
+                        showActions={false}
                     />
 
                     {error && (
@@ -395,9 +420,25 @@ export default function ColoringEditor() {
                             </div>
                         )}
                     </section>
+                    <div className="editor-bottom-tools">
+                        <Toolbar
+                            color={color}
+                            onColorChange={setColor}
+                            eraser={eraser}
+                            onEraserToggle={setEraser}
+                            onClear={handleClear}
+                            onSave={handleSave}
+                            onPublishToggle={handlePublishToggle}
+                            onDelete={handleDelete}
+                            saving={saving}
+                            deleting={deleting}
+                            isPublic={artwork.isPublic}
+                            showActions={true}
+                        />
+                    </div>
 
                 </div>
             </main>
-            </div>
-            );
+        </div>
+    );
 }

@@ -101,15 +101,7 @@ export default function MyColorings() {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="profile-new-button"
-            onClick={() =>
-              navigate('/kolorowanka/nowa')
-            }
-          >
-            ＋ Nowa kolorowanka
-          </button>
+
         </div>
 
         {loading && (
