@@ -8,6 +8,8 @@ import Gallery from './pages/Gallery';
 import GalleryArtwork from './pages/GalleryArtwork';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewColoring from './pages/NewColoring';
+import VerifyEmail from './pages/VerifyEmail';
+import VerifyEmailSent from './pages/VerifyEmailSent';
 
 function Home() {
   return (
@@ -95,6 +97,15 @@ export default function App() {
             replace
           />
         }
+      />
+      <Route
+        path="/verify-email"
+        element={<VerifyEmail />}
+      />
+
+      <Route
+        path="/verify-email-sent"
+        element={<VerifyEmailSent />}
       />
     </Routes>
   );

@@ -57,6 +57,21 @@ export async function login(email, password) {
   });
 }
 
+
+export async function verifyEmail(token) {
+  return request(
+    `/auth/verify-email?token=${encodeURIComponent(token)}`
+  );
+}
+
+export async function resendVerification(email) {
+  return request('/auth/resend-verification', {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+    }),
+  });
+}
 /*
  * =========================
  * HEALTH
